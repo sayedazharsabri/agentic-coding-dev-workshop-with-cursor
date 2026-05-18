@@ -1,0 +1,60 @@
+---
+description: Branch naming and commit workflow — never commit on master
+alwaysApply: true
+---
+
+# Git Branching & Commits
+
+When staging, committing, or pushing (including when the user asks for a commit):
+
+## Never commit on master
+
+- Do **not** commit on `master` or `main`.
+- Before the first commit, create and switch to a new branch (see naming below).
+- If currently on `master`/`main`, create the branch first, then stage and commit.
+
+## Start from master
+
+- **Always** check out `master` (or `main` if that is the default branch) **before** creating a new branch.
+- Do not branch off another feature or bug branch unless the user explicitly asks.
+- Pull latest on `master` when appropriate before branching.
+
+## Branch naming
+
+Use one of these formats with **today’s date** as `yyyymmdd` (e.g. `20260518`):
+
+| Work type | Pattern | Example |
+|-----------|---------|---------|
+| Feature | `<feature>_yyyymmdd` | `employeeManagementApi_20260518` |
+| Bug fix | `<bug>_yyyymmdd` | `duplicateEmailFix_20260518` |
+
+- `<feature>` / `<bug>`: short camelCase or descriptive slug (no spaces).
+- One branch per logical change; push with upstream when the user wants a remote branch (`git push -u origin <branch>`).
+
+## Workflow
+
+```bash
+# 1. Switch to master and update if needed
+git checkout master
+git pull origin master
+
+# 2. Create branch (feature or bug name + date)
+git checkout -b myFeature_20260518
+
+# 3. Stage, commit, push
+git add ...
+git commit -m "..."
+git push -u origin myFeature_20260518
+```
+
+## Examples
+
+```text
+✅ employeeCrud_20260518          (feature)
+✅ validationErrorResponse_20260518 (bug)
+
+❌ commit on master
+❌ git checkout -b myFeature_20260518   (from a feature branch — start from master first)
+❌ feature/my-thing               (wrong format)
+❌ myFeature_2026-05-18           (wrong date format)
+```
