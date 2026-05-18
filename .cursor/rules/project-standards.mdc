@@ -1,0 +1,56 @@
+---
+description: Git safety, custom Logger usage, and mandatory error handling
+alwaysApply: true
+---
+
+# Project Standards
+
+## Git
+
+- **Never** run `git commit`, `git push`, `git add` (for commits), create branches for commits, or open PRs unless the user **explicitly** asks.
+- If git changes are needed but intent is unclear, **ask the user first** before staging, committing, or pushing.
+- Do not amend, force-push, or skip hooks unless the user explicitly requests it.
+- Never commit secrets (`.env`, credentials, API keys).
+
+## Logging
+
+Use the project **`Logger`** from `src/library/Logger.ts`. Do **not** use `console.log`, `console.error`, `console.warn`, `console.info`, or `console.debug` anywhere under `src/`.
+
+```typescript
+import { Logger } from "../library/Logger";
+
+const logger = new Logger();
+logger.info("Server started");
+logger.error("Operation failed", err);
+```
+
+Only `Logger.ts` may call the console APIs internally.
+
+## Error handling
+
+All application code must handle errors explicitly. No silent failures or unhandled promise rejections.
+
+- Wrap async route handlers, services, and I/O in `try/catch`.
+- Log failures with `logger.error` (include the error when useful).
+- Return appropriate HTTP status and JSON messages in controllers; never leak stack traces to clients.
+- Do not use empty `catch` blocks.
+- Map known errors (validation, duplicate key, not found) to specific responses; use 500 for unexpected errors.
+
+```typescript
+// BAD — no handling
+export async function getItems(_req: Request, res: Response) {
+  const items = await Item.find();
+  res.json(items);
+}
+
+// GOOD
+export async function getItems(_req: Request, res: Response): Promise<void> {
+  try {
+    const items = await Item.find();
+    res.json(items);
+  } catch (err: unknown) {
+    logger.error("Failed to fetch items", err);
+    res.status(500).json({ message: "Failed to fetch items" });
+  }
+}
+```
